@@ -2,6 +2,7 @@
 using Zion;
 using Zion.Vectors;
 using Char = QuickShell.FormattedChar;
+using DrawAction = System.Action<int, int, QuickShell.FormattedChar>;
 
 namespace QuickShell
 {
@@ -9,12 +10,13 @@ namespace QuickShell
     {
         #region Data
         private readonly ConcurrentDictionary<int, Line> Lines;
+
         #endregion
 
         #region Events
-
         public event Action? Changed;
         public event Action? Clearing;
+
         #endregion
 
         #region Constructors
@@ -67,6 +69,127 @@ namespace QuickShell
             Clearing?.Invoke();
         }
 
+        public void Draw(Vector2Int Start, Vector2Int Size, DrawAction Draw)
+        {
+            ArgumentOutOfRangeException.ThrowIf(Vector2Int.IsNegative(Start), $"Start(={Start}) is negative");
+            ArgumentOutOfRangeException.ThrowIf(Vector2Int.IsNegative(Size),  $"Size(={Size}) is negative");
+
+            Vector2Int End = Start + Size - Vector2Int.OneOne;
+
+            Vector2Int StartChunk = Start >> Chunk.BinarySize;
+            Vector2Int EndChunk   = End   >> Chunk.BinarySize;
+
+            Vector2Int LocalStart =  Start & Chunk.Filter;
+            Vector2Int LocalEnd   = (End   & Chunk.Filter) + Vector2Int.OneOne;
+
+            bool OnlyOneLine   = StartChunk.Y == EndChunk.Y;
+            bool OnlyOneColumn = StartChunk.X == EndChunk.X;
+
+            void DrawLine(Line Line, in int LineY, in int MinLocalY, in int MaxLocalY)
+            {
+                if (OnlyOneColumn)
+                {
+                    if (Line.TryGetChunk(StartChunk.X, out Chunk OnlyChunk))
+                    {
+                        DrawChunk
+                        (
+                            OnlyChunk,
+                            StartChunk.X, LineY,
+                            LocalStart.X, MinLocalY,
+                            LocalEnd.X, MaxLocalY
+                        );
+                    }
+                    return;
+                }
+
+                //FirstChunk
+                if (Line.TryGetChunk(StartChunk.X, out Chunk FirstChunk))
+                {
+                    DrawChunk
+                    (
+                        FirstChunk,
+                        in StartChunk.X, in LineY,
+                        in LocalStart.X, in MinLocalY,
+                        Chunk.Size,      in MaxLocalY
+                    );
+                }
+
+                //MiddleChunk
+                for (int i = StartChunk.X + 1; i < EndChunk.X; i++)
+                {
+                    if (Line.TryGetChunk(in i, out Chunk Chunk))
+                    {
+                        DrawChunk
+                        (
+                            Chunk, in i, in LineY,
+                            0, 0,
+                            Chunk.Size, Chunk.Size
+                        );
+                    }
+                }
+                
+                //LastChunk
+                if (Line.TryGetChunk(EndChunk.X, out Chunk LastChunk))
+                {
+                    DrawChunk
+                    (
+                        LastChunk,
+                        in EndChunk.X, in LineY,
+                        0,             in MinLocalY,
+                        in LocalEnd.X, in MaxLocalY
+                    );
+                }
+            }
+
+            void DrawChunk(Chunk Chunk,
+                in int ChunkX, in int ChunkY,
+                in int MinX, in int MinY,
+                in int MaxX, in int MaxY)
+            {
+                int StartX = ChunkX << Chunk.BinarySize;
+                int StartY = ChunkY << Chunk.BinarySize;
+
+                for (int x = MinX; x < MaxX; x++)
+                {
+                    for (int y = MinY; y < MaxY; y++)
+                    {
+                        Draw(StartX + x - Start.X, Start.Y + y - Start.Y, Chunk[x, y]);
+                    }
+                }
+            }
+
+            if (OnlyOneLine)
+            {
+                if (TryGetLine(StartChunk.Y, out Line OnlyLine))
+                {
+                    DrawLine(OnlyLine, StartChunk.Y, LocalStart.Y, LocalEnd.Y);
+                }
+                return;
+            }
+
+
+            //FirstLine
+            if (TryGetLine(StartChunk.Y, out Line FirstLine))
+            {
+                DrawLine(FirstLine, in StartChunk.Y, in LocalStart.Y, Chunk.Size);
+            }
+
+            //MiddleLines
+            for (int i = StartChunk.Y + 1; i < EndChunk.Y; i++)
+            {
+                if (TryGetLine(i, out Line Line))
+                {
+                    DrawLine(Line, in i, 0, Chunk.Size);
+                }
+            }
+            
+            //LastLine
+            if (TryGetLine(EndChunk.Y, out Line LastLine))
+            {
+                DrawLine(LastLine, in EndChunk.Y, 0, in LocalEnd.Y);
+            }
+        }
+
         #endregion
 
         #region PrivateMethods
@@ -93,6 +216,11 @@ namespace QuickShell
             Line = Line.New();
             Lines.TryAdd(Y, Line);
             return Line;
+        }
+
+        private bool TryGetLine(in int Y, out Line Line)
+        {
+            return Lines.TryGetValue(Y, out Line);
         }
 
         #endregion
