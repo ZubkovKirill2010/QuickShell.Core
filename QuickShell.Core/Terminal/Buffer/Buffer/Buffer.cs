@@ -2,7 +2,6 @@
 using Zion;
 using Zion.Vectors;
 using Char = QuickShell.FormattedChar;
-using DrawAction = System.Action<int, int, QuickShell.FormattedChar>;
 
 namespace QuickShell
 {
@@ -10,6 +9,11 @@ namespace QuickShell
     {
         #region Data
         private readonly ConcurrentDictionary<int, Line> Lines;
+
+        #endregion
+
+        #region Changing
+        private readonly List<ChangeTracker> ChangeTrackers;
 
         #endregion
 
@@ -23,6 +27,7 @@ namespace QuickShell
         public Buffer()
         {
             Lines = new(-1, 500);
+            ChangeTrackers = new List<ChangeTracker>();
         }
 
         #endregion
@@ -43,6 +48,7 @@ namespace QuickShell
             {
                 Chunk Chunk = GetChunk(X >> Chunk.BinarySize, Y >> Chunk.BinarySize);
                 Chunk[X & Chunk.Filter, Y & Chunk.Filter] = value;
+                Change(in X, in Y);
             }
         }
 
@@ -66,23 +72,23 @@ namespace QuickShell
             Lines.Values.ForEach(Line.Return);
             Lines.Clear();
 
+            ChangeTrackers.ForEach(Tracker => Tracker.OnChanged());
+
             Clearing?.Invoke();
         }
 
-        public void Draw(Vector2Int Start, Vector2Int Size, DrawAction Draw)
+        public void Draw(VisualizingContext Context)
         {
-            ArgumentOutOfRangeException.ThrowIf(Vector2Int.IsNegative(Start), $"Start(={Start}) is negative");
-            ArgumentOutOfRangeException.ThrowIf(Vector2Int.IsNegative(Size),  $"Size(={Size}) is negative");
-
-            Vector2Int End = Start + Size - Vector2Int.OneOne;
+            Vector2Int Start = Context.Start;
+            Vector2Int End = Context.End;
 
             Vector2Int StartChunk = Start >> Chunk.BinarySize;
-            Vector2Int EndChunk   = End   >> Chunk.BinarySize;
+            Vector2Int EndChunk = End >> Chunk.BinarySize;
 
-            Vector2Int LocalStart =  Start & Chunk.Filter;
-            Vector2Int LocalEnd   = (End   & Chunk.Filter) + Vector2Int.OneOne;
+            Vector2Int LocalStart = Start & Chunk.Filter;
+            Vector2Int LocalEnd = (End & Chunk.Filter) + Vector2Int.OneOne;
 
-            bool OnlyOneLine   = StartChunk.Y == EndChunk.Y;
+            bool OnlyOneLine = StartChunk.Y == EndChunk.Y;
             bool OnlyOneColumn = StartChunk.X == EndChunk.X;
 
             void DrawLine(Line Line, in int LineY, in int MinLocalY, in int MaxLocalY)
@@ -110,7 +116,7 @@ namespace QuickShell
                         FirstChunk,
                         in StartChunk.X, in LineY,
                         in LocalStart.X, in MinLocalY,
-                        Chunk.Size,      in MaxLocalY
+                        Chunk.Size, in MaxLocalY
                     );
                 }
 
@@ -127,7 +133,7 @@ namespace QuickShell
                         );
                     }
                 }
-                
+
                 //LastChunk
                 if (Line.TryGetChunk(EndChunk.X, out Chunk LastChunk))
                 {
@@ -135,7 +141,7 @@ namespace QuickShell
                     (
                         LastChunk,
                         in EndChunk.X, in LineY,
-                        0,             in MinLocalY,
+                        0, in MinLocalY,
                         in LocalEnd.X, in MaxLocalY
                     );
                 }
@@ -153,7 +159,7 @@ namespace QuickShell
                 {
                     for (int y = MinY; y < MaxY; y++)
                     {
-                        Draw(StartX + x - Start.X, Start.Y + y - Start.Y, Chunk[x, y]);
+                        Context.Draw(StartX + x - Start.X, Start.Y + y - Start.Y, Chunk[x, y]);
                     }
                 }
             }
@@ -182,12 +188,20 @@ namespace QuickShell
                     DrawLine(Line, in i, 0, Chunk.Size);
                 }
             }
-            
+
             //LastLine
             if (TryGetLine(EndChunk.Y, out Line LastLine))
             {
                 DrawLine(LastLine, in EndChunk.Y, 0, in LocalEnd.Y);
             }
+        }
+
+
+        public void AddChangeTracker(ChangeTracker ChangeTracker)
+        {
+            ArgumentNullException.ThrowIfNull(ChangeTracker);
+
+            ChangeTrackers.Add(ChangeTracker);
         }
 
         #endregion
@@ -221,6 +235,15 @@ namespace QuickShell
         private bool TryGetLine(in int Y, out Line Line)
         {
             return Lines.TryGetValue(Y, out Line);
+        }
+
+
+        private void Change(in int X, in int Y)
+        {
+            foreach (ChangeTracker Tracker in ChangeTrackers)
+            {
+                Tracker.Change(in X, in Y);
+            }
         }
 
         #endregion

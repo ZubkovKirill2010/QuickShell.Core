@@ -11,7 +11,7 @@ namespace QuickShell
 
         public int Length { get; private set; }
 
-        
+
         public static Line New()
         {
             return LinePool.Get();

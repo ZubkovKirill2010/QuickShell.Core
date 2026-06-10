@@ -1,16 +1,17 @@
 ﻿namespace QuickShell
 {
-    public static class InputManager
+    public sealed class InputManager
     {
         private static readonly Stack<IInputHandler> Handlers
             = new Stack<IInputHandler>();
+
         private static readonly IEnumerable<IInputHandler> ActiveHandlers
             = Handlers.Where(Item => Item.IsActive);
 
         public static int HandlerCount { get; private set; }
 
 
-        public static void HandleKeyDown(KeyboardInfo KeyInfo)
+        public static void HandleKeyDown(KeyInfo KeyInfo)
         {
             foreach (IInputHandler Handler in ActiveHandlers)
             {

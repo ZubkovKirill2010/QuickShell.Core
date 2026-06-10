@@ -1,7 +1,7 @@
 ﻿namespace QuickShell
 {
     [Serializable]
-    public readonly struct KeyboardInfo
+    public readonly struct KeyInfo
     {
         public readonly Key Key;
         public readonly ModifierKeys Modifiers;
@@ -13,7 +13,7 @@
         public bool Alt   => Modifiers.HasFlag(ModifierKeys.Alt);
         public bool Win   => Modifiers.HasFlag(ModifierKeys.Win);
 
-        public KeyboardInfo(Key Key, ModifierKeys Modifiers, char KeyChar)
+        public KeyInfo(Key Key, ModifierKeys Modifiers, char KeyChar)
         {
             this.Key = Key;
             this.Char = KeyChar;

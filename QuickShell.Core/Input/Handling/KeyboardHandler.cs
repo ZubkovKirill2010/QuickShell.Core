@@ -2,10 +2,10 @@
 {
     public sealed class KeyboardHandler
     {
-        public readonly KeyboardInfo Info;
+        public readonly KeyInfo Info;
         public bool Handled;
 
-        public KeyboardHandler(KeyboardInfo KeyInfo)
+        public KeyboardHandler(KeyInfo KeyInfo)
         {
             this.Info = KeyInfo;
         }

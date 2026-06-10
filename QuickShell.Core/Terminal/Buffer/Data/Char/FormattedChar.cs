@@ -15,6 +15,11 @@ namespace QuickShell
             this.Char = Char;
             this.Color = Color;
         }
+        public FormattedChar(char Char, TextStyle Style)
+        {
+            this.Char = Char;
+            this.Color = Style.Color;
+        }
         public FormattedChar(char Char)
             : this(Char, RGBColor.White) { }
 
@@ -23,23 +28,22 @@ namespace QuickShell
         {
             return A.Char == B.Char && A.Color == B.Color;
         }
-        public static bool operator !=(FormattedChar A, FormattedChar B)
-        {
-            return A.Char != B.Char || A.Color != B.Color;
-        }
-
         public static bool operator ==(FormattedChar A, char B)
         {
             return A.Char == B;
         }
-        public static bool operator !=(FormattedChar A, char B)
-        {
-            return A.Char != B;
-        }
-
         public static bool operator ==(char A, FormattedChar B)
         {
             return A == B.Char;
+        }
+
+        public static bool operator !=(FormattedChar A, FormattedChar B)
+        {
+            return A.Char != B.Char || A.Color != B.Color;
+        }
+        public static bool operator !=(FormattedChar A, char B)
+        {
+            return A.Char != B;
         }
         public static bool operator !=(char A, FormattedChar B)
         {
