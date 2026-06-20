@@ -4,23 +4,23 @@ namespace QuickShell
 {
     public sealed class Session
     {
-        public readonly ModuleHub    Hub;
+        public readonly SessionHub   Hub;
         public readonly Terminal     Terminal;
         public readonly InputManager Input;
 
+        public TerminalVisualizer   TerminalVisualizer;
         public StatusBarVisualizer? StatusBarVisualizer;
-        public TerminalVisualizer Visualizer
-        {
-            get; set => field = value.NotNull();
-        }
 
-        public Session(ModuleHub Hub)
+        public Session(SessionHub Hub)
         {
             this.Hub = Hub.NotNull();
 
             Terminal = new Terminal();
             Input = new InputManager();
-            Visualizer = new BaseTerminalVisualizer() { Source = Terminal };
+
+            TerminalVisualizer  = new BaseTerminalVisualizer() { Source = Terminal };
+
+            Hub.Session = this;
         }
 
 

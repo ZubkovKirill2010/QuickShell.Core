@@ -12,11 +12,6 @@ namespace QuickShell
 
         #endregion
 
-        #region Changing
-        private readonly List<ChangeTracker> ChangeTrackers;
-
-        #endregion
-
         #region Events
         public event Action? Changed;
         public event Action? Clearing;
@@ -27,7 +22,6 @@ namespace QuickShell
         public Buffer()
         {
             Lines = new(-1, 500);
-            ChangeTrackers = new List<ChangeTracker>();
         }
 
         #endregion
@@ -48,7 +42,6 @@ namespace QuickShell
             {
                 Chunk Chunk = GetChunk(X >> Chunk.BinarySize, Y >> Chunk.BinarySize);
                 Chunk[X & Chunk.Filter, Y & Chunk.Filter] = value;
-                Change(in X, in Y);
             }
         }
 
@@ -72,12 +65,10 @@ namespace QuickShell
             Lines.Values.ForEach(Line.Return);
             Lines.Clear();
 
-            ChangeTrackers.ForEach(Tracker => Tracker.OnChanged());
-
             Clearing?.Invoke();
         }
 
-        public void Draw(VisualizingContext Context)
+        public void Draw(TerminalVisualizingContext Context)
         {
             Vector2Int Start = Context.Start;
             Vector2Int End = Context.End;
@@ -196,14 +187,6 @@ namespace QuickShell
             }
         }
 
-
-        public void AddChangeTracker(ChangeTracker ChangeTracker)
-        {
-            ArgumentNullException.ThrowIfNull(ChangeTracker);
-
-            ChangeTrackers.Add(ChangeTracker);
-        }
-
         #endregion
 
         #region PrivateMethods
@@ -235,15 +218,6 @@ namespace QuickShell
         private bool TryGetLine(in int Y, out Line Line)
         {
             return Lines.TryGetValue(Y, out Line);
-        }
-
-
-        private void Change(in int X, in int Y)
-        {
-            foreach (ChangeTracker Tracker in ChangeTrackers)
-            {
-                Tracker.Change(in X, in Y);
-            }
         }
 
         #endregion

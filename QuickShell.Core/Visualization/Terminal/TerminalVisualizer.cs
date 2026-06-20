@@ -9,7 +9,7 @@ namespace QuickShell
             protected get; init => field = value.NotNull();
         }
 
-        public event Action? Changed;
+        public readonly EventBus Invalidated = new();
 
         public abstract void Draw(TerminalVisualizingContext Context);
     }

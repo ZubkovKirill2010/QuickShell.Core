@@ -1,4 +1,5 @@
-﻿using Zion.Vectors;
+﻿using Zion;
+using Zion.Vectors;
 
 namespace QuickShell
 {
@@ -8,8 +9,8 @@ namespace QuickShell
         private readonly Buffer Buffer = new Buffer();
         private readonly RegionManager RegionManager = new RegionManager();
 
-        public TextStyle BaseTextStyle;
-        public TextFormatter TextFormatter;
+        public TextFormatter TextFormatter = new TextFormatter();
+        public TextStyle BaseTextStyle = new TextStyle(new RGBColor(220));
         #endregion
 
         #region Cursor
@@ -48,8 +49,9 @@ namespace QuickShell
         #region Functions
         public void Clear()
         {
-            ClearRegions();
+            CursorPosition = Vector2Int.Zero;
             Buffer.Clear();
+            ClearRegions();
         }
 
         #endregion

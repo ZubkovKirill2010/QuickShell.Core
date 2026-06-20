@@ -4,23 +4,22 @@ namespace QuickShell.Runtime
 {
     public sealed class Shell
     {
-        private readonly Host Host;
         private readonly Stack<Session> Sessions = new Stack<Session>();
-
-        public readonly Module Module;
+        private readonly Host Host;
+        public  readonly Module Module;
 
         public Shell(Host Host, Session Session)
         {
-            this.Host = Host.NotNull();
+            this.Host   = Host.NotNull();
             this.Module = new Module()
             {
-                CanClose = Sessions.Peek().Hub.CanClose
+                CanClose = () => Sessions.All(static Session => Session.Hub.CanClose())
             };
 
             PushSession(Session);
         }
 
-        
+
         public void PushSession(Session Session)
         {
             ArgumentNullException.ThrowIfNull(Session);
