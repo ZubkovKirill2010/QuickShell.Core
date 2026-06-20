@@ -7,13 +7,15 @@ namespace QuickShell
         private readonly char[] Buffer;
 
         public readonly int Length;
+        public readonly bool LengthChanged;
 
-        public StatusBarVisualizingContext(char[] Buffer, int Length)
+        public StatusBarVisualizingContext(char[] Buffer, int Length, bool LengthChanged)
         {
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(Length, Buffer.Length);
 
             this.Buffer = Buffer.NotNull();
             this.Length = Length;
+            this.LengthChanged = LengthChanged;
         }
 
 
@@ -33,7 +35,7 @@ namespace QuickShell
         public void Clear()
         {
             char[] Buffer = this.Buffer;
-            int    Length = this.Length;
+            int Length = this.Length;
 
             for (int i = 0; i < Length; i++)
             {
