@@ -15,17 +15,21 @@ namespace QuickShell
             }
         }
 
-        protected Terminal Terminal { get; private set; }
-
+        protected Terminal Terminal         { get; private set; }
         protected InputManager InputManager { get; private set; }
+
+        protected string Title
+        {
+            get => Session.Title;
+            set => Session.Title = value;
+        }
 
         protected TerminalVisualizer TerminalVisualizer
         {
             get => Session.TerminalVisualizer;
             set => Session.TerminalVisualizer = value;
         }
-
-        protected StatusBarVisualizer StatusBarVisualizer
+        protected StatusBarVisualizer? StatusBarVisualizer
         {
             get => Session.StatusBarVisualizer;
             set => Session.StatusBarVisualizer = value;
@@ -41,7 +45,12 @@ namespace QuickShell
 
         protected void Close()
         {
-            //TODO
+            Session.Shell?.Close();
+        }
+
+        protected void CloseForced()
+        {
+            Session.Shell?.CloseForced();
         }
     }
 }

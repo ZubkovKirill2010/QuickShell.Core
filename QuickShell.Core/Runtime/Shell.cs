@@ -4,48 +4,96 @@ namespace QuickShell.Runtime
 {
     public sealed class Shell
     {
-        private readonly Stack<Session> Sessions = new Stack<Session>();
-        private readonly Host Host;
-        public  readonly Module Module;
+        private readonly Action Exit;
+        private readonly List<Session> Sessions = new List<Session>();
 
-        public Shell(Host Host, Session Session)
+        public  readonly GlobalInputHandler InputHandler;
+
+        public readonly EventRouter TerminalVisualizerRouter;
+        public readonly EventRouter StatusBarVisualizerRouter;
+
+        public int SessionCount => Sessions.Count;
+
+        public Session CurrentSession
         {
-            this.Host   = Host.NotNull();
-            this.Module = new Module()
+            get;
+            set
             {
-                CanClose = () => Sessions.All(static Session => Session.Hub.CanClose())
-            };
+                value ??= Sessions[0];
+                if (field != value)
+                {
+                    field = value;
+                    TerminalVisualizerRouter.Sender = value.TerminalVisualizer.Invalidated;
+                    StatusBarVisualizerRouter.Sender = value.StatusBarVisualizer?.Invalidated;
+                }
+            }
+        }        
 
-            PushSession(Session);
+        public event Action? SessionsChanged;
+
+
+        public Shell(Session Session, Action Close)
+        {
+            InputHandler = new GlobalInputHandler(this);
+
+            TerminalVisualizerRouter  = new();
+            StatusBarVisualizerRouter = new();
+
+            Exit = Close.NotNull();
+
+            AddSession(Session.NotNull());
         }
 
 
-        public void PushSession(Session Session)
+        public Session this[int Index]   => Sessions[Index];
+
+        public Session this[Index Index] => Sessions[Index];
+
+
+        public void AddSession(Session Session, bool SwitchFocus = false)
         {
             ArgumentNullException.ThrowIfNull(Session);
 
-            Sessions.Push(Session);
-            Host.CurrentSession = Session;
+            Session.Shell = this;
+
+            Sessions.Add(Session);
+            SessionsChanged?.Invoke();
+
+            if (SwitchFocus)
+            {
+                CurrentSession = Session;
+            }
         }
 
-        public void PopSession()
+        public bool RemoveSession(Session Session)
         {
-            Sessions.Pop();
+            if (Sessions.Remove(Session))
+            {
+                Session.Shell = null;
 
-            if (Sessions.Count > 0)
-            {
-                Host.CurrentSession = Sessions.Peek();
+                if (SessionCount == 0)
+                {
+                    Exit();
+                }
+
+                SessionsChanged?.Invoke();
+                return true;
             }
-            else
-            {
-                Host.Close();
-            }           
+            return false;
         }
 
 
         public void Close()
         {
-            Host.Close();
+            if (Sessions.All(static Session => Session.Hub.CanClose()))
+            {
+                Exit();
+            }
+        }
+
+        public void CloseForced()
+        {
+            Exit();
         }
     }
 }

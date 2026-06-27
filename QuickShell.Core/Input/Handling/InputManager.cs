@@ -2,16 +2,19 @@
 {
     public sealed class InputManager
     {
-        private static readonly Stack<IInputHandler> Handlers
-            = new Stack<IInputHandler>();
+        private readonly Stack<IInputHandler> Handlers;
+        private readonly IEnumerable<IInputHandler> ActiveHandlers;
 
-        private static readonly IEnumerable<IInputHandler> ActiveHandlers
-            = Handlers.Where(Item => Item.IsActive);
+        public int HandlerCount => Handlers.Count;
 
-        public static int HandlerCount { get; private set; }
+        public InputManager()
+        {
+            Handlers = new Stack<IInputHandler>();
+            ActiveHandlers = Handlers.Where(static Item => Item.IsActive);
+        }
 
 
-        public static void HandleKeyDown(KeyInfo KeyInfo)
+        public void KeyDown(KeyInfo KeyInfo)
         {
             foreach (IInputHandler Handler in ActiveHandlers)
             {
@@ -25,7 +28,7 @@
             }
         }
 
-        public static void HandleMouseDown(MouseState State)
+        public void MouseDown(MouseState State)
         {
             foreach (IInputHandler Handler in ActiveHandlers)
             {
@@ -39,7 +42,7 @@
             }
         }
 
-        public static void HandleMouseUp(MouseState State)
+        public void MouseUp(MouseState State)
         {
             foreach (IInputHandler Handler in ActiveHandlers)
             {
@@ -54,21 +57,17 @@
         }
 
 
-        public static void PushHandler(IInputHandler Handler)
+        public void PushHandler(IInputHandler Handler)
         {
             Handlers.Push(Handler);
-            HandlerCount++;
         }
 
-        public static void PopHandler()
+        public void PopHandler()
         {
-            if (HandlerCount == 0)
+            if (HandlerCount != 0)
             {
-                return;
-            }
-
-            Handlers.Pop();
-            HandlerCount--;
+                Handlers.Pop();
+            }            
         }
     }
 }
