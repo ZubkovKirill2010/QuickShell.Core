@@ -2,6 +2,8 @@
 {
     public enum StatusBarLength
     {
-        Any, Even, NoEven
+        Any    = 0,
+        NoEven = 1,
+        Even   = 2
     }
 }

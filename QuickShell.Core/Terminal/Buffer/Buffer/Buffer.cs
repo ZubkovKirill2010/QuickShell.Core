@@ -70,8 +70,8 @@ namespace QuickShell
 
         public void Draw(TerminalVisualizingContext Context)
         {
-            Vector2Int Start = Context.Start;
-            Vector2Int End = Context.End;
+            Vector2Int Start = Context.Size.Start;
+            Vector2Int End = Context.Size.End;
 
             Vector2Int StartChunk = Start >> Chunk.BinarySize;
             Vector2Int EndChunk = End >> Chunk.BinarySize;
