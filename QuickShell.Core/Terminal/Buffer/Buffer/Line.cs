@@ -5,7 +5,11 @@ namespace QuickShell
 {
     internal sealed class Line
     {
-        private static readonly ConcurrentObjectPool<Line> LinePool = new(() => new Line());
+        private static readonly ConcurrentObjectPool<Line> LinePool = new()
+        {
+            New = static () => new Line(),
+            Getter = static Line => { Line.Clear(); return Line; }
+        };
 
         private readonly ConcurrentDictionary<int, Chunk> Chunks = new();
 
@@ -20,9 +24,7 @@ namespace QuickShell
         public static void Return(Line Line)
         {
             Line.Chunks.Values.ForEach(Chunk.Return);
-            Line.Clear();
-
-            LinePool.Return(Line);
+            LinePool.Add(Line);
         }
 
 

@@ -5,7 +5,11 @@ namespace QuickShell
 {
     internal sealed class Chunk
     {
-        private static readonly ConcurrentObjectPool<Chunk> ChunkPool = new(() => new Chunk());
+        private static readonly ConcurrentObjectPool<Chunk> ChunkPool = new()
+        {
+            New = static () => new Chunk(),
+            Getter = static Chunk => { Chunk.Clear(); return Chunk; }
+        };
 
         public const int BinarySize = 4;
         public const int Size = 1 << BinarySize;
@@ -59,7 +63,7 @@ namespace QuickShell
         public static void Return(Chunk Chunk)
         {
             Chunk.Clear();
-            ChunkPool.Return(Chunk);
+            ChunkPool.Add(Chunk);
         }
 
 
