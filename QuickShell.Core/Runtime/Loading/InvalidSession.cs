@@ -2,11 +2,11 @@
 
 namespace QuickShell
 {
-    public sealed class InvalidSessionHub : SessionHub, IInputHandler
+    public sealed class InvalidSession : Session, IInputHandler
     {
         private readonly string Message;
 
-        public InvalidSessionHub(string Message)
+        public InvalidSession(string Message)
         {
             this.Message = Message.NotNull();
         }

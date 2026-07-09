@@ -10,11 +10,11 @@ namespace QuickShell.Runtime
             = Path.Combine(AppContext.BaseDirectory, "Modules", "MyModule.dll");//TODO
 
 
-        public SessionHub Load()
+        public Session Load()
         {
             if (!File.Exists(DllPath))
             {
-                return new InvalidSessionHub($"Couldn't load module dll from \"{DllPath}\"");
+                return new InvalidSession($"Couldn't load module dll from \"{DllPath}\"");
             }
 
             try
@@ -22,18 +22,18 @@ namespace QuickShell.Runtime
                 Assembly Assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(DllPath);
 
                 return FindHub(Assembly, out Type HubType)
-                ? (SessionHub)Activator.CreateInstance(HubType).NotNull()
-                : new InvalidSessionHub("The entry point was not found. The module must contain a non-abstract class that inherits from SessionHub.");
+                ? (Session)Activator.CreateInstance(HubType).NotNull()
+                : new InvalidSession("The entry point was not found. The module must contain a non-abstract class that inherits from SessionHub.");
             }
             catch (Exception Exception)
             {
-                return new InvalidSessionHub($"Couldn't load module dll from \"{DllPath}\":\n{Exception.GetType().FullName}\n{Exception.Message}");
+                return new InvalidSession($"Couldn't load module dll from \"{DllPath}\":\n{Exception.GetType().FullName}\n{Exception.Message}");
             }
         }
 
         private static bool FindHub(Assembly Assembly, out Type Hub)
         {
-            Type Target = typeof(SessionHub);
+            Type Target = typeof(Session);
 
             foreach (Type Type in Assembly.GetExportedTypes())
             {

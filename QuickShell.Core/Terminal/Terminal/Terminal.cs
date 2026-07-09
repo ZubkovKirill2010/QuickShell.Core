@@ -6,11 +6,13 @@ namespace QuickShell
     public sealed partial class Terminal
     {
         #region Data
-        private readonly Buffer Buffer = new Buffer();
-        private readonly RegionManager RegionManager = new RegionManager();
+        private readonly Buffer Buffer;
+        private readonly TextFormatter Formatter;
 
-        public TextFormatter TextFormatter = new TextFormatter();
         public TextStyle BaseTextStyle = new TextStyle(new RGBColor(220));
+
+        public readonly TerminalBinding Binding;
+
         #endregion
 
         #region Cursor
@@ -44,6 +46,22 @@ namespace QuickShell
             }
         }
 
+        public IFormattedText Null
+        {
+            get => Formatter.Null;
+            set => Formatter.Null = value;
+        }
+
+        #endregion
+
+        #region Constructors
+        public Terminal()
+        {
+            Buffer = new Buffer();
+            Formatter = new TextFormatter();
+            Binding = new TerminalBinding();
+        }
+
         #endregion
 
         #region Functions
@@ -51,7 +69,6 @@ namespace QuickShell
         {
             CursorPosition = Vector2Int.Zero;
             Buffer.Clear();
-            ClearRegions();
         }
 
         #endregion

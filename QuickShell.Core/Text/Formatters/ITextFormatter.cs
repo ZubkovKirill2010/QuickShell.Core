@@ -4,6 +4,6 @@
     {
         public Type TargetType { get; }
 
-        public IFormattedString Format(object Value);
+        public IFormattedText Format(object Value);
     }
 }

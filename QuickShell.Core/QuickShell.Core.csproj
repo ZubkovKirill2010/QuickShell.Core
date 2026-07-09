@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Terminal\Buffer\Buffer\**" />
+    <Compile Remove="TextFormatting\**" />
+    <EmbeddedResource Remove="Terminal\Buffer\Buffer\**" />
+    <EmbeddedResource Remove="TextFormatting\**" />
+    <None Remove="Terminal\Buffer\Buffer\**" />
+    <None Remove="TextFormatting\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Zion">
       <HintPath>..\..\..\Zion\Zion\bin\Debug\net10.0\Zion.dll</HintPath>
     </Reference>
@@ -14,7 +23,6 @@
 
   <ItemGroup>
     <Folder Include="Runtime\Shell\" />
-    <Folder Include="Terminal\Buffer\Buffer\" />
     <Folder Include="Visualization\StatusBar\WidgetStatusBar\Data\" />
   </ItemGroup>
 

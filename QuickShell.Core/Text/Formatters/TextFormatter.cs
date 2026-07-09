@@ -7,10 +7,14 @@ namespace QuickShell
         private readonly Dictionary<Type, ITextFormatter> SealedFormatters = new();
         private readonly List<ITextFormatter> Formatters = new();
 
-        public IFormattedString Null { get; set => field = value.NotNull(); }//TODO (Base value)
+        public IFormattedText Null { get; set => field = value.NotNull(); }
+            = new ColoredString("null", new RGBColor(69, 161, 232));
+
+        public TextStyle BaseStyle { get; init; }
+            = new TextStyle(RGBColor.White);
 
 
-        public IFormattedString Format<T>(T Value)
+        public IFormattedText Format<T>(T Value)
         {
             if (Value is null)
             {
@@ -22,13 +26,14 @@ namespace QuickShell
                 return Formatter.Format(Value);
             }
 
-            throw new NotImplementedException();
-            //TODO (base formatter)
+            return new StyledString(Value.ToNotNullString(), BaseStyle);
         }
 
 
         public void AddFormatter(ITextFormatter Formatter)
         {
+            ArgumentNullException.ThrowIfNull(Formatter);
+
             Type Type = Formatter.TargetType;
 
             if (Type.IsSealed)

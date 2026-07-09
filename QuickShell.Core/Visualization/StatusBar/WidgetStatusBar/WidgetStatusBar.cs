@@ -2,7 +2,7 @@
 
 namespace QuickShell
 {
-    public sealed class WidgetStatusBar : StatusBarVisualizer, IDisposable
+    public sealed class WidgetStatusBar : StatusBar, IDisposable
     {
         private readonly WidgetStatusBarCache Cache = new();
         private readonly WidgetList Left   = new(),

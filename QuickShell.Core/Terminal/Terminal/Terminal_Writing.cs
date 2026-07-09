@@ -5,18 +5,18 @@
     {
         public void AddFormatter(ITextFormatter Formatter)
         {
-            TextFormatter.AddFormatter(Formatter);
+            this.Formatter.AddFormatter(Formatter);
         }
 
 
-        public void Write(IFormattedString? Value)
+        public void Write(IFormattedText? Value)
         {
-            //TODO
+            Value ??= Formatter.Null;
         }
 
         public void Write<T>(T? Value)
         {
-            Write(TextFormatter.Format(Value));
+            Write(Formatter.Format(Value));
         }
     }
 }

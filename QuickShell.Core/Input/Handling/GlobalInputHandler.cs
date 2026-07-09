@@ -15,17 +15,17 @@ namespace QuickShell
 
         public void OnKeyDown(KeyInfo KeyInfo)
         {
-            Shell.CurrentSession.Input.KeyDown(KeyInfo);
+            Shell.InputHandler.OnKeyDown(KeyInfo);
         }
 
         public void OnMouseDown(MouseState State)
         {
-            Shell.CurrentSession.Input.MouseDown(State);
+            Shell.InputHandler.OnMouseDown(State);
         }
 
         public void OnMouseUp(MouseState State)
         {
-            Shell.CurrentSession.Input.MouseUp(State);
+            Shell.InputHandler.OnMouseUp(State);
         }
     }
 }

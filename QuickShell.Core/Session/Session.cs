@@ -1,15 +1,21 @@
-﻿using QuickShell.Runtime;
-using Zion;
-
-namespace QuickShell
+﻿namespace QuickShell
 {
-    public sealed class Session
+    public abstract class Session
     {
-        internal Shell? Shell;
+        public readonly InputManager Input = new();
+        public readonly Terminal Terminal = new();
 
-        public readonly SessionHub   Hub;
-        public readonly Terminal     Terminal;
-        public readonly InputManager Input;
+        public readonly StatusBarBinding StatusBarBinding = new();
+        public StatusBar StatusBar
+        {
+            get => StatusBarBinding.Visualizer.Value;
+            set
+            {
+                value ??= NullStatusBarVisualizer.Instance;
+                StatusBarBinding.Visualizer.Value = value;
+            }
+        }
+
 
         public string Title
         {
@@ -22,51 +28,28 @@ namespace QuickShell
             }
         } = "Title";
 
-        public TerminalVisualizer TerminalVisualizer
-        {
-            get;
-            set
-            {
-                value ??= new BaseTerminalVisualizer() { Source = Terminal };
-                if (!ReferenceEquals(field, value))
-                {
-                    field = value;
-                    Shell?.TerminalVisualizerRouter.Sender = value.Invalidated;
-                }
-            }
-        }
-        public StatusBarVisualizer? StatusBarVisualizer
-        {
-            get;
-            set
-            {
-                if (!ReferenceEquals(field, value))
-                {
-                    field = value;
-                    Shell?.StatusBarVisualizerRouter.Sender = value?.Invalidated;
-                }
-            }
-        }
-
         public event Action<string>? TitleChanged;
 
 
-        public Session(SessionHub Hub)
+        public abstract void Main(in ModuleArguments Arguments);
+
+        public virtual bool CanClose() => true;
+
+        public virtual void OnClosed() { }
+
+
+        public void Close()
         {
-            this.Hub = Hub.NotNull();
-
-            Terminal = new Terminal();
-            Input = new InputManager();
-
-            TerminalVisualizer = new BaseTerminalVisualizer() { Source = Terminal };
-
-            Hub.Session = this;
+            if (CanClose())
+            {
+                CloseForced();
+            }
         }
 
-
-        public void Run(in ModuleArguments Arguments)
+        public void CloseForced()
         {
-            Hub.Main(in Arguments);
+            OnClosed();
+            //TODO
         }
     }
 }
